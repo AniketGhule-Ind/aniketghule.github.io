@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aniket Ghule · Data Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #03050a;
+  --surface: #070b12;
+  --card: #0b1018;
+  --border: #14202e;
+  --accent: #00c8f8;
+  --accent2: #6d28d9;
+  --accent3: #10b981;
+  --accent4: #f59e0b;
+  --text: #dde6f0;
+  --muted: #3e5570;
+  --mono: 'Space Mono', monospace;
+  --body: 'Inter', sans-serif;
+  --hero: 'Barlow Condensed', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; }
+
+/* dot grid overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(0,200,248,0.055) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events: none; z-index: 0;
+}
+
+#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 4rem;
+  background: rgba(3,5,10,0.82);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,200,248,0.09);
+}
+.nav-logo {
+  font-family: var(--hero); font-size: 1.15rem; font-weight: 900;
+  letter-spacing: 0.14em; color: var(--accent); text-transform: uppercase;
+}
+.nav-logo em { color: var(--muted); font-style: normal; }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.14em; text-transform: uppercase; transition: color .2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+  padding: 0 5rem; padding-top: 80px;
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--accent);
+  letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 1rem;
+  animation: fadeUp .55s ease .1s both;
+}
+.hero-eyebrow::before { content:''; width:42px; height:1px; background: var(--accent); }
+
+.hero-name {
+  font-family: var(--hero); font-weight: 900;
+  font-size: clamp(5.5rem, 14vw, 12rem);
+  line-height: 0.87; letter-spacing: 0.02em; text-transform: uppercase;
+  margin-bottom: 1.3rem;
+  animation: fadeUp .65s ease .2s both;
+}
+.hero-name .first { color: #ffffff; display: block; }
+.hero-name .last  { color: var(--accent); display: block; }
+
+.hero-role {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem;
+  animation: fadeUp .65s ease .32s both;
+}
+.hero-desc {
+  font-size: 0.97rem; line-height: 1.9; color: #567090;
+  max-width: 460px; margin-bottom: 2.8rem;
+  animation: fadeUp .65s ease .42s both;
+}
+.hero-desc strong { color: var(--text); font-weight: 600; }
+
+.hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp .65s ease .52s both; }
+
+.btn-primary {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: .88rem 2.2rem;
+  background: var(--accent); color: #000; font-weight: 700;
+  border: none; cursor: pointer; text-decoration: none; display: inline-block;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: opacity .2s, transform .2s;
+}
+.btn-primary:hover { opacity: .85; transform: translateY(-2px); }
+
+.btn-outline {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: .88rem 2.2rem;
+  background: transparent; color: var(--accent);
+  border: 1px solid rgba(0,200,248,.35); cursor: pointer;
+  text-decoration: none; display: inline-block;
+  transition: background .2s, transform .2s;
+}
+.btn-outline:hover { background: rgba(0,200,248,.07); transform: translateY(-2px); }
+
+.hero-stats {
+  position: absolute; right: 5rem; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 2.8rem;
+  animation: fadeUp .65s ease .62s both;
+}
+.stat-item { text-align: right; }
+.stat-num {
+  font-family: var(--hero); font-size: 3.4rem; font-weight: 900;
+  color: var(--accent); display: block; line-height: 1;
+}
+.stat-label {
+  font-family: var(--mono); font-size: 0.58rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.2em;
+}
+
+/* ── SECTIONS ── */
+section { position: relative; z-index: 1; padding: 7rem 5rem; }
+#projects, #contact {
+  background: linear-gradient(180deg, transparent, rgba(7,11,18,.97) 4%, rgba(7,11,18,.97) 96%, transparent);
+}
+.sec-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 4rem; }
+.sec-num { font-family: var(--mono); font-size: 0.63rem; color: var(--accent); letter-spacing: 0.24em; }
+.sec-title {
+  font-family: var(--hero); font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.sec-rule { flex:1; height:1px; background: linear-gradient(90deg, var(--border), transparent); margin-left: 1.5rem; }
+
+/* ── ABOUT ── */
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+.about-text p { font-size: .95rem; line-height: 1.9; color: #567090; margin-bottom: 1.2rem; }
+.about-text p strong { color: var(--text); font-weight: 600; }
+.skills-label { font-family: var(--mono); font-size: .6rem; color: var(--muted); letter-spacing: .22em; text-transform: uppercase; margin-bottom: 1.1rem; }
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+.skill-pill {
+  font-family: var(--mono); font-size: .66rem; padding: .52rem .88rem;
+  border: 1px solid var(--border); color: var(--muted); letter-spacing: .08em;
+  transition: border-color .2s, color .2s, background .2s; cursor: default;
+}
+.skill-pill:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,200,248,.04); }
+.skill-pill.g:hover { border-color: var(--accent3); color: var(--accent3); }
+.skill-pill.p:hover { border-color: #8b5cf6; color: #8b5cf6; }
+.skill-pill.y:hover { border-color: var(--accent4); color: var(--accent4); }
+
+/* ── PROJECTS ── */
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.2rem; }
+.proj-card {
+  background: var(--card); border: 1px solid var(--border);
+  padding: 1.7rem; text-decoration: none; display: block;
+  position: relative; overflow: hidden;
+  transition: transform .25s, border-color .25s;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+.proj-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  transform: scaleX(0); transform-origin: left; transition: transform .35s;
+}
+.proj-card.c1::before { background: linear-gradient(90deg, var(--accent), transparent); }
+.proj-card.c2::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+.proj-card.c3::before { background: linear-gradient(90deg, #8b5cf6, transparent); }
+.proj-card.c4::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+.proj-card:hover { transform: translateY(-5px); border-color: rgba(0,200,248,.25); }
+.proj-card.c2:hover { border-color: rgba(16,185,129,.25); }
+.proj-card.c3:hover { border-color: rgba(139,92,246,.25); }
+.proj-card.c4:hover { border-color: rgba(245,158,11,.25); }
+.proj-card:hover::before { transform: scaleX(1); }
+.proj-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.proj-icon { font-size: 1.25rem; }
+.proj-source { font-family: var(--mono); font-size: .58rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.proj-card:hover .proj-source { color: var(--accent); }
+.proj-title { font-family: var(--hero); font-size: 1.2rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--text); margin-bottom: .45rem; }
+.proj-desc { font-size: .8rem; line-height: 1.72; color: var(--muted); margin-bottom: 1.3rem; }
+.proj-tags { display: flex; flex-wrap: wrap; gap: .38rem; }
+.tag { font-family: var(--mono); font-size: .56rem; letter-spacing: .08em; padding: .26rem .56rem; border: 1px solid var(--border); color: var(--muted); text-transform: uppercase; }
+
+.add-card {
+  border: 1px dashed rgba(0,200,248,.18); padding: 1.7rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 190px; cursor: pointer; text-decoration: none;
+  transition: border-color .2s, background .2s;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+.add-card:hover { border-color: rgba(0,200,248,.45); background: rgba(0,200,248,.025); }
+.add-plus { font-size: 1.7rem; color: rgba(0,200,248,.22); margin-bottom: .7rem; transition: color .2s; }
+.add-card:hover .add-plus { color: var(--accent); }
+.add-text { font-family: var(--mono); font-size: .63rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; text-align: center; line-height: 2.1; }
+
+/* ── PLATFORMS ── */
+.platforms-row { display: flex; flex-wrap: wrap; gap: .85rem; margin-top: 1.5rem; }
+.platform-card {
+  display: flex; align-items: center; gap: .9rem; padding: .95rem 1.5rem;
+  border: 1px solid var(--border); background: var(--card); text-decoration: none;
+  transition: border-color .2s, transform .2s, background .2s;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.platform-card:hover { border-color: rgba(0,200,248,.35); transform: translateY(-3px); background: rgba(0,200,248,.035); }
+.p-icon { font-size: 1.15rem; }
+.p-name { font-family: var(--hero); font-size: .95rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text); display: block; }
+.p-handle { font-family: var(--mono); font-size: .6rem; color: var(--muted); }
+
+/* ── CONTACT ── */
+.contact-inner { max-width: 560px; }
+.contact-inner p { font-size: .95rem; line-height: 1.9; color: #567090; margin-bottom: 2.5rem; }
+.contact-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 0; border-top: 1px solid var(--border);
+  text-decoration: none; color: var(--text); font-weight: 600; font-size: 1rem;
+  transition: color .2s, padding-left .2s;
+}
+.contact-row:last-child { border-bottom: 1px solid var(--border); }
+.contact-row:hover { color: var(--accent); padding-left: .55rem; }
+.contact-row span { font-family: var(--mono); font-size: .63rem; color: var(--muted); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1; border-top: 1px solid var(--border);
+  padding: 1.7rem 5rem; display: flex; justify-content: space-between; align-items: center;
+}
+.f-left { font-family: var(--mono); font-size: .66rem; color: var(--muted); }
+.f-right { font-family: var(--mono); font-size: .66rem; color: var(--muted); }
+.f-right a { color: var(--accent); text-decoration: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  nav { padding: 1rem 1.5rem; }
+  section { padding: 5rem 1.5rem; }
+  .hero { padding: 6rem 1.5rem 3rem; }
+  .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .hero-stats { display: none; }
+  footer { flex-direction: column; gap: .5rem; padding: 1.5rem; text-align: center; }
+}
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .projects-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">AG<em>.analytics</em></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#platforms">Platforms</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-eyebrow">Data Analytics · Portfolio · 2026</div>
+  <h1 class="hero-name">
+    <span class="first">Aniket</span>
+    <span class="last">Ghule</span>
+  </h1>
+  <div class="hero-role">Data Analyst &nbsp;/&nbsp; BI Developer &nbsp;/&nbsp; Insight Engineer</div>
+  <p class="hero-desc">
+    Turning raw datasets into <strong>actionable intelligence</strong>.<br>
+    I build dashboards, craft SQL queries, and write Python pipelines that help people make smarter decisions.
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn-primary">Explore Projects</a>
+    <a href="#contact"  class="btn-outline">Get in Touch</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><span class="stat-num" id="n-projects">0</span><span class="stat-label">Projects</span></div>
+    <div class="stat-item"><span class="stat-num" id="n-tools">0</span><span class="stat-label">Tools</span></div>
+    <div class="stat-item"><span class="stat-num" id="n-platforms">0</span><span class="stat-label">Platforms</span></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-header"><span class="sec-num">01 /</span><h2 class="sec-title">About Me</h2><div class="sec-rule"></div></div>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>Hi, I'm <strong>Aniket Ghule</strong> — a data analytics enthusiast from <strong>Aurangabad, Maharashtra</strong>. I'm passionate about digging into datasets, spotting patterns, and turning messy numbers into clear, compelling stories.</p>
+      <p>My work spans <strong>exploratory data analysis</strong>, interactive dashboard design, and end-to-end ML pipelines. I document everything on GitHub and share dashboards on Tableau Public and Kaggle.</p>
+      <p>Currently sharpening my skills in <strong>machine learning</strong>, advanced <strong>SQL</strong>, and <strong>business intelligence</strong> — one project at a time.</p>
+    </div>
+    <div>
+      <div class="skills-label">Tech Stack &amp; Tools</div>
+      <div class="skills-grid">
+        <div class="skill-pill">Python</div>
+        <div class="skill-pill g">SQL</div>
+        <div class="skill-pill p">Power BI</div>
+        <div class="skill-pill">Pandas</div>
+        <div class="skill-pill g">Matplotlib</div>
+        <div class="skill-pill">Seaborn</div>
+        <div class="skill-pill p">Tableau</div>
+        <div class="skill-pill">NumPy</div>
+        <div class="skill-pill y">Excel</div>
+        <div class="skill-pill">Jupyter</div>
+        <div class="skill-pill p">Scikit-learn</div>
+        <div class="skill-pill g">GitHub</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="sec-header"><span class="sec-num">02 /</span><h2 class="sec-title">Projects</h2><div class="sec-rule"></div></div>
+  <div class="projects-grid">
+    <a class="proj-card c1" href="#" target="_blank">
+      <div class="proj-meta"><div class="proj-icon">📊</div><div class="proj-source">↗ GitHub</div></div>
+      <h3 class="proj-title">Sales Data Analysis</h3>
+      <p class="proj-desc">End-to-end EDA on retail sales data. Uncovered seasonal trends, top SKUs, and regional patterns using Python and Pandas.</p>
+      <div class="proj-tags"><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">Matplotlib</span><span class="tag">EDA</span></div>
+    </a>
+    <a class="proj-card c2" href="#" target="_blank">
+      <div class="proj-meta"><div class="proj-icon">🗄️</div><div class="proj-source">↗ GitHub</div></div>
+      <h3 class="proj-title">SQL Business Insights</h3>
+      <p class="proj-desc">Complex SQL queries on a relational database answering business questions — CLV, churn analysis, and cohort breakdowns.</p>
+      <div class="proj-tags"><span class="tag">SQL</span><span class="tag">MySQL</span><span class="tag">Data Wrangling</span></div>
+    </a>
+    <a class="proj-card c3" href="#" target="_blank">
+      <div class="proj-meta"><div class="proj-icon">📈</div><div class="proj-source">↗ Tableau Public</div></div>
+      <h3 class="proj-title">Dashboard: COVID Trends</h3>
+      <p class="proj-desc">Interactive Tableau dashboard for COVID-19 across Indian states — case growth, vaccination rates, and recovery curves.</p>
+      <div class="proj-tags"><span class="tag">Tableau</span><span class="tag">Dashboard</span><span class="tag">Visualization</span></div>
+    </a>
+    <a class="proj-card c4" href="#" target="_blank">
+      <div class="proj-meta"><div class="proj-icon">🏠</div><div class="proj-source">↗ GitHub</div></div>
+      <h3 class="proj-title">House Price Prediction</h3>
+      <p class="proj-desc">Regression model predicting housing prices with feature engineering, correlation analysis, and scikit-learn pipelines.</p>
+      <div class="proj-tags"><span class="tag">Scikit-learn</span><span class="tag">Regression</span><span class="tag">NumPy</span></div>
+    </a>
+    <a class="proj-card c2" href="#" target="_blank">
+      <div class="proj-meta"><div class="proj-icon">💼</div><div class="proj-source">↗ Power BI</div></div>
+      <h3 class="proj-title">HR Analytics Report</h3>
+      <p class="proj-desc">Power BI report covering employee attrition, department performance, and demographic breakdowns for HR decisions.</p>
+      <div class="proj-tags"><span class="tag">Power BI</span><span class="tag">DAX</span><span class="tag">HR Data</span></div>
+    </a>
+    <a class="add-card" href="https://github.com" target="_blank">
+      <div class="add-plus">＋</div>
+      <div class="add-text">More on GitHub<br><span style="color:var(--accent)">github.com/aniketghule →</span></div>
+    </a>
+  </div>
+</section>
+
+<!-- PLATFORMS -->
+<section id="platforms">
+  <div class="sec-header"><span class="sec-num">03 /</span><h2 class="sec-title">Find Me On</h2><div class="sec-rule"></div></div>
+  <p style="color:var(--muted);font-size:.9rem;max-width:480px;line-height:1.9;">I share notebooks, dashboards, and write-ups across multiple platforms.</p>
+  <div class="platforms-row">
+    <a class="platform-card" href="https://github.com" target="_blank"><div class="p-icon">🐙</div><div><span class="p-name">GitHub</span><span class="p-handle">@aniketghule</span></div></a>
+    <a class="platform-card" href="https://kaggle.com" target="_blank"><div class="p-icon">📓</div><div><span class="p-name">Kaggle</span><span class="p-handle">Notebooks &amp; Datasets</span></div></a>
+    <a class="platform-card" href="https://public.tableau.com" target="_blank"><div class="p-icon">📊</div><div><span class="p-name">Tableau Public</span><span class="p-handle">Dashboards</span></div></a>
+    <a class="platform-card" href="https://linkedin.com" target="_blank"><div class="p-icon">💼</div><div><span class="p-name">LinkedIn</span><span class="p-handle">Aniket Ghule</span></div></a>
+    <a class="platform-card" href="https://medium.com" target="_blank"><div class="p-icon">✍️</div><div><span class="p-name">Medium</span><span class="p-handle">Articles &amp; Write-ups</span></div></a>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="sec-header"><span class="sec-num">04 /</span><h2 class="sec-title">Contact</h2><div class="sec-rule"></div></div>
+  <div class="contact-inner">
+    <p>Open to collaborations, internships, freelance analytics work, or just a conversation about data. Feel free to reach out!</p>
+    <div>
+      <a class="contact-row" href="mailto:aniket@example.com">aniket@example.com<span>Email ↗</span></a>
+      <a class="contact-row" href="https://linkedin.com" target="_blank">LinkedIn<span>Connect ↗</span></a>
+      <a class="contact-row" href="https://github.com" target="_blank">GitHub<span>Follow ↗</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-left">© 2026 Aniket Ghule · Data Analytics</div>
+  <div class="f-right">Built with curiosity &amp; <a href="#">code</a></div>
+</footer>
+
+<script>
+/* ── COUNT UP ── */
+function countUp(el, target, suffix='') {
+  let n=0; const step=Math.max(1,Math.ceil(target/50));
+  const t=setInterval(()=>{ n=Math.min(n+step,target); el.textContent=n+suffix; if(n>=target)clearInterval(t); },35);
+}
+setTimeout(()=>{
+  countUp(document.getElementById('n-projects'),5,'+');
+  countUp(document.getElementById('n-tools'),12,'+');
+  countUp(document.getElementById('n-platforms'),5);
+},900);
+
+/* ── SCROLL REVEAL ── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}
+  });
+},{threshold:.08});
+document.querySelectorAll('.proj-card,.add-card,.platform-card,.contact-row,.skill-pill').forEach(el=>{
+  el.style.opacity='0'; el.style.transform='translateY(22px)';
+  el.style.transition='opacity .55s ease, transform .55s ease, border-color .25s, color .2s, background .2s, padding-left .2s';
+  obs.observe(el);
+});
+
+/* ══════════════════════════════════════════════════════
+   ANIMATED DATA ANALYTICS BACKGROUND
+   Objects: bar charts, line charts, scatter plots, pie charts,
+            SQL snippets, Python code, Excel grids, KPI cards,
+            area charts — all drifting slowly as watermarks
+══════════════════════════════════════════════════════ */
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  resize(); window.addEventListener('resize',resize);
+
+  /* colour helpers */
+  const C={
+    cyan:   v=>`rgba(0,200,248,${v})`,
+    green:  v=>`rgba(16,185,129,${v})`,
+    purple: v=>`rgba(139,92,246,${v})`,
+    amber:  v=>`rgba(245,158,11,${v})`,
+    white:  v=>`rgba(210,225,240,${v})`,
+  };
+  const colFns=[C.cyan,C.green,C.purple,C.amber];
+  function randCol(){ return colFns[Math.floor(Math.random()*colFns.length)]; }
+
+  /* ── DRAW FUNCTIONS ── */
+
+  function drawBar(x,y,w,h,a,col){
+    const n=6, bw=w/(n*1.7), gap=(w-n*bw)/(n+1);
+    const vals=[.68,.38,.88,.50,.72,.45];
+    ctx.strokeStyle=col(a*.4); ctx.lineWidth=.5;
+    ctx.strokeRect(x,y,w,h);
+    vals.forEach((v,i)=>{
+      const bx=x+gap+i*(bw+gap), bh=h*.8*v;
+      ctx.fillStyle=col(a*.65);
+      ctx.fillRect(bx,y+h*.88-bh,bw,bh);
+    });
+    ctx.beginPath(); ctx.moveTo(x+4,y+h*.88); ctx.lineTo(x+w-4,y+h*.88);
+    ctx.strokeStyle=col(a*.35); ctx.stroke();
+  }
+
+  function drawLine(x,y,w,h,a,col){
+    const pts=[.55,.3,.6,.2,.65,.38,.8,.5,.75];
+    ctx.strokeStyle=col(a*.4); ctx.lineWidth=.5; ctx.strokeRect(x,y,w,h);
+    ctx.beginPath();
+    pts.forEach((v,i)=>{
+      const px=x+(i/(pts.length-1))*w, py=y+h*.88-v*h*.8;
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    });
+    ctx.strokeStyle=col(a*.9); ctx.lineWidth=1.2; ctx.stroke();
+    pts.forEach((v,i)=>{
+      ctx.beginPath();
+      ctx.arc(x+(i/(pts.length-1))*w, y+h*.88-v*h*.8, 1.8,0,Math.PI*2);
+      ctx.fillStyle=col(a); ctx.fill();
+    });
+  }
+
+  function drawArea(x,y,w,h,a,col){
+    const pts=[.4,.28,.55,.35,.7,.5,.8,.6];
+    ctx.strokeStyle=col(a*.35); ctx.lineWidth=.4; ctx.strokeRect(x,y,w,h);
+    const base=y+h*.9;
+    ctx.beginPath(); ctx.moveTo(x,base);
+    pts.forEach((v,i)=>ctx.lineTo(x+(i/(pts.length-1))*w, y+h*.88-v*h*.8));
+    ctx.lineTo(x+w,base); ctx.closePath();
+    const g=ctx.createLinearGradient(x,y,x,y+h);
+    g.addColorStop(0,col(a*.28)); g.addColorStop(1,col(0));
+    ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath();
+    pts.forEach((v,i)=>{ const px=x+(i/(pts.length-1))*w,py=y+h*.88-v*h*.8; i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+    ctx.strokeStyle=col(a*.9); ctx.lineWidth=1.1; ctx.stroke();
+  }
+
+  function drawScatter(x,y,w,h,a,col){
+    ctx.strokeStyle=col(a*.35); ctx.lineWidth=.4; ctx.strokeRect(x,y,w,h);
+    [[.2,.7],[.5,.38],[.8,.2],[.3,.55],[.65,.62],[.72,.28],[.12,.82],[.9,.12],[.42,.74]].forEach(([px,py])=>{
+      ctx.beginPath(); ctx.arc(x+px*w,y+py*h,2.2,0,Math.PI*2);
+      ctx.fillStyle=col(a*.75); ctx.fill();
+    });
+  }
+
+  function drawPie(cx,cy,r,a){
+    const slices=[.34,.24,.22,.2]; const cf=[C.cyan,C.green,C.purple,C.amber];
+    let s=-Math.PI/2;
+    slices.forEach((sl,i)=>{
+      const e=s+sl*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,s,e); ctx.closePath();
+      ctx.fillStyle=cf[i](a*.5); ctx.fill();
+      ctx.strokeStyle=C.white(a*.12); ctx.lineWidth=.5; ctx.stroke();
+      s=e;
+    });
+  }
+
+  function drawKPI(x,y,a,col,label,value){
+    const w=88,h=46;
+    ctx.fillStyle=C.white(a*.03); ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle=col(a*.3); ctx.lineWidth=.5; ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle=col(a*.7); ctx.fillRect(x,y,w,2);
+    ctx.fillStyle=col(a*.8); ctx.font='bold 14px "Courier New"';
+    ctx.fillText(value,x+7,y+24);
+    ctx.fillStyle=C.white(a*.38); ctx.font='6px "Courier New"';
+    ctx.fillText(label,x+7,y+37);
+  }
+
+  function drawExcel(x,y,a){
+    const cols=5,rows=5,cw=34,rh=13;
+    const hdrs=['ID','Name','Sales','Rgn','Pct'];
+    const rows_data=[['001','Alpha','12.4K','North','92%'],['002','Beta','8.2K','South','78%'],['003','Gamma','15.7K','East','95%'],['004','Delta','9.1K','West','81%']];
+    for(let ci=0;ci<cols;ci++){
+      ctx.fillStyle=C.cyan(a*.1); ctx.fillRect(x+ci*cw,y,cw,rh);
+      ctx.strokeStyle=C.cyan(a*.18); ctx.lineWidth=.4; ctx.strokeRect(x+ci*cw,y,cw,rh);
+      ctx.fillStyle=C.cyan(a*.8); ctx.font='6.5px "Courier New"';
+      ctx.fillText(hdrs[ci],x+ci*cw+4,y+9);
+    }
+    rows_data.forEach((row,ri)=>{
+      row.forEach((cell,ci)=>{
+        const ry=y+(ri+1)*rh;
+        ctx.fillStyle=ri%2===0?C.white(a*.025):'transparent'; ctx.fillRect(x+ci*cw,ry,cw,rh);
+        ctx.strokeStyle=C.white(a*.07); ctx.lineWidth=.3; ctx.strokeRect(x+ci*cw,ry,cw,rh);
+        ctx.fillStyle=C.white(a*.5); ctx.font='6px "Courier New"';
+        ctx.fillText(cell,x+ci*cw+3,ry+9);
+      });
+    });
+  }
+
+  const SQL=[
+    ['SELECT name, revenue','FROM sales_data','WHERE year = 2024','GROUP BY region','ORDER BY revenue DESC;'],
+    ['SELECT COUNT(*) AS total,','  AVG(score) AS avg','FROM customers','WHERE active = 1;'],
+    ['WITH cte AS (','  SELECT id, SUM(val)','  FROM orders','  GROUP BY id)','SELECT * FROM cte;'],
+  ];
+  function drawSQL(x,y,a,idx){
+    const lines=SQL[idx%SQL.length];
+    const bw=148,bh=lines.length*12+14;
+    ctx.fillStyle=C.white(a*.025); ctx.fillRect(x,y,bw,bh);
+    ctx.strokeStyle=C.cyan(a*.14); ctx.lineWidth=.5; ctx.strokeRect(x,y,bw,bh);
+    // window dots
+    [['rgba(255,90,80,','rgba(255,185,40,','rgba(35,195,55,']].flat().forEach((dc,di)=>{
+      ctx.beginPath(); ctx.arc(x+8+di*10,y+7,2.5,0,Math.PI*2);
+      ctx.fillStyle=dc+(a*.65)+')'; ctx.fill();
+    });
+    ctx.font='8px "Courier New"';
+    lines.forEach((line,i)=>{
+      const kws=['SELECT','FROM','WHERE','GROUP','ORDER','WITH','AS','SUM','AVG','COUNT'];
+      const isKW=kws.some(k=>line.trim().toUpperCase().startsWith(k));
+      ctx.fillStyle=isKW?C.cyan(a*.9):C.white(a*.55);
+      ctx.fillText(line,x+7,y+18+i*12);
+    });
+  }
+
+  const PY=[
+    ['import pandas as pd','df = pd.read_csv("data.csv")','df.dropna(inplace=True)','df.describe()'],
+    ['import matplotlib.pyplot as plt','plt.figure(figsize=(10,6))','plt.plot(df["date"],df["val"])','plt.title("Trend Analysis")','plt.show()'],
+    ['from sklearn.linear_model','  import LinearRegression','model = LinearRegression()','model.fit(X_train, y_train)','score = model.score(X_test,y)'],
+  ];
+  function drawPython(x,y,a,idx){
+    const lines=PY[idx%PY.length];
+    const bw=192,bh=lines.length*12+15;
+    ctx.fillStyle=C.white(a*.025); ctx.fillRect(x,y,bw,bh);
+    ctx.strokeStyle=C.green(a*.16); ctx.lineWidth=.5; ctx.strokeRect(x,y,bw,bh);
+    ctx.fillStyle=C.green(a*.55); ctx.font='6.5px "Courier New"';
+    ctx.fillText('● python',x+6,y+8);
+    ctx.font='8px "Courier New"';
+    lines.forEach((line,i)=>{
+      const isImp=line.startsWith('import')||line.startsWith('from');
+      const isAss=line.includes('=')&&!line.startsWith('from');
+      ctx.fillStyle=isImp?C.amber(a*.8):isAss?C.green(a*.8):C.white(a*.5);
+      ctx.fillText(line,x+7,y+19+i*12);
+    });
+  }
+
+  /* ── OBJECT POOL ── */
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+
+  const TYPES=['bar','line','area','scatter','pie','sql','python','excel','kpi'];
+  const kpiData=[
+    {label:'Revenue',value:'₹48K'},{label:'Users',value:'1.2K'},
+    {label:'Growth',value:'↑23%'},{label:'Queries',value:'892'},
+    {label:'Accuracy',value:'94.7%'}
+  ];
+
+  const NUM=30;
+  const objs=Array.from({length:NUM},(_, i)=>({
+    type: TYPES[i%TYPES.length],
+    x: Math.random()*window.innerWidth,
+    y: Math.random()*window.innerHeight,
+    vx: rnd(-.07,.07)||.02,
+    vy: rnd(-.055,.055)||.02,
+    alpha: rnd(.045,.14),
+    col: randCol(),
+    si: Math.floor(Math.random()*3),
+    kpi: kpiData[i%kpiData.length],
+    scale: rnd(.72,1.22),
+    rot: rnd(-.12,.12),
+  }));
+
+  function draw(o){
+    ctx.save();
+    ctx.translate(o.x,o.y);
+    ctx.rotate(o.rot);
+    ctx.scale(o.scale,o.scale);
+    switch(o.type){
+      case 'bar':     drawBar(0,0,88,58,o.alpha,o.col); break;
+      case 'line':    drawLine(0,0,100,58,o.alpha,o.col); break;
+      case 'area':    drawArea(0,0,108,54,o.alpha,o.col); break;
+      case 'scatter': drawScatter(0,0,80,68,o.alpha,o.col); break;
+      case 'pie':     drawPie(30,30,28,o.alpha); break;
+      case 'sql':     drawSQL(0,0,o.alpha,o.si); break;
+      case 'python':  drawPython(0,0,o.alpha,o.si); break;
+      case 'excel':   drawExcel(0,0,o.alpha); break;
+      case 'kpi':     drawKPI(0,0,o.alpha,o.col,o.kpi.label,o.kpi.value); break;
+    }
+    ctx.restore();
+  }
+
+  let last=0;
+  function animate(ts){
+    const dt=Math.min(ts-last,50); last=ts;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const W=canvas.width, H=canvas.height, P=230;
+    objs.forEach(o=>{
+      o.x+=o.vx*(dt*.45);
+      o.y+=o.vy*(dt*.45);
+      if(o.x>W+P) o.x=-P;
+      if(o.x<-P)  o.x=W+P;
+      if(o.y>H+P) o.y=-P;
+      if(o.y<-P)  o.y=H+P;
+      draw(o);
+    });
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
